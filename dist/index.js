@@ -218,7 +218,7 @@ async function handleButton(i) {
         }
     }
     catch (err) {
-        const msg = err instanceof api_1.ApiError ? err.message : "Unexpected error.";
+        const msg = errMessage(err);
         await replyText(i, `Error: ${msg}`, RED);
     }
 }
@@ -245,7 +245,7 @@ async function handleModal(i) {
         await replyText(i, "✅ Key redeemed and linked to your account! Use **Get Script** to start.", GREEN);
     }
     catch (err) {
-        const msg = err instanceof api_1.ApiError ? err.message : "Unexpected error.";
+        const msg = errMessage(err);
         await replyText(i, `Error: ${msg}`, RED);
     }
 }
@@ -429,13 +429,20 @@ async function handleCommand(i) {
         }
     }
     catch (err) {
-        const msg = err instanceof api_1.ApiError ? err.message : "Unexpected error.";
+        const msg = errMessage(err);
         await replyText(i, `Error: ${msg}`, RED);
     }
 }
 /* --------------------------- Dispatch --------------------------- */
+function errMessage(err) {
+    console.error("[bastion-bot] handler error:", err);
+    if (err instanceof Error)
+        return err.message;
+    return "Unexpected error.";
+}
 client.once(discord_js_1.Events.ClientReady, (c) => {
     console.log(`Bastion bot online as ${c.user.tag}`);
+    console.log(`[bastion-bot] API=${BASE} | HMAC=${process.env.BOT_HMAC_KEY ? "set" : "MISSING"} | OWNERS=${OWNER_IDS.length}`);
 });
 client.on(discord_js_1.Events.InteractionCreate, async (interaction) => {
     try {

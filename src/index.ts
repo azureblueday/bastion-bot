@@ -267,7 +267,7 @@ async function handleButton(i: ButtonInteraction) {
       return;
     }
   } catch (err) {
-    const msg = err instanceof ApiError ? err.message : "Unexpected error.";
+    const msg = errMessage(err);
     await replyText(i, `Error: ${msg}`, RED);
   }
 }
@@ -292,7 +292,7 @@ async function handleModal(i: ModalSubmitInteraction) {
     if (i.guildId && cfg?.buyerRoleId) await grantRole(i.guildId, i.user.id, cfg.buyerRoleId).catch(() => {});
     await replyText(i, "✅ Key redeemed and linked to your account! Use **Get Script** to start.", GREEN);
   } catch (err) {
-    const msg = err instanceof ApiError ? err.message : "Unexpected error.";
+    const msg = errMessage(err);
     await replyText(i, `Error: ${msg}`, RED);
   }
 }
@@ -493,15 +493,24 @@ async function handleCommand(i: ChatInputCommandInteraction) {
         await replyText(i, "Unknown command.", RED);
     }
   } catch (err) {
-    const msg = err instanceof ApiError ? err.message : "Unexpected error.";
+    const msg = errMessage(err);
     await replyText(i, `Error: ${msg}`, RED);
   }
 }
 
 /* --------------------------- Dispatch --------------------------- */
 
+function errMessage(err: unknown): string {
+  console.error("[bastion-bot] handler error:", err);
+  if (err instanceof Error) return err.message;
+  return "Unexpected error.";
+}
+
 client.once(Events.ClientReady, (c) => {
   console.log(`Bastion bot online as ${c.user.tag}`);
+  console.log(
+    `[bastion-bot] API=${BASE} | HMAC=${process.env.BOT_HMAC_KEY ? "set" : "MISSING"} | OWNERS=${OWNER_IDS.length}`
+  );
 });
 
 client.on(Events.InteractionCreate, async (interaction: Interaction) => {
