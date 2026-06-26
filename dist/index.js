@@ -4,9 +4,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = require("discord.js");
+const node_dns_1 = __importDefault(require("node:dns"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const api_1 = require("./api");
 dotenv_1.default.config();
+// Prefer IPv4 — many hosts advertise IPv6 but can't route it, which surfaces as
+// "fetch failed / ECONNREFUSED" on outbound API calls.
+node_dns_1.default.setDefaultResultOrder("ipv4first");
 const ACCENT = 0xf97316;
 const RED = 0xef4444;
 const GREEN = 0x22c55e;

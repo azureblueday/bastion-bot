@@ -17,10 +17,15 @@ import {
   Interaction,
   PermissionFlagsBits,
 } from "discord.js";
+import dns from "node:dns";
 import dotenv from "dotenv";
 import { api, ApiError, BotKey, GuildPanel } from "./api";
 
 dotenv.config();
+
+// Prefer IPv4 — many hosts advertise IPv6 but can't route it, which surfaces as
+// "fetch failed / ECONNREFUSED" on outbound API calls.
+dns.setDefaultResultOrder("ipv4first");
 
 const ACCENT = 0xf97316;
 const RED = 0xef4444;
