@@ -500,17 +500,32 @@ async function handleCommand(i: ChatInputCommandInteraction) {
 
 /* --------------------------- Dispatch --------------------------- */
 
+function causeOf(err: unknown): string {
+  const cause = (err as { cause?: { code?: string; message?: string } })?.cause;
+  if (!cause) return "";
+  return ` (${cause.code || cause.message || String(cause)})`;
+}
+
 function errMessage(err: unknown): string {
   console.error("[bastion-bot] handler error:", err);
-  if (err instanceof Error) return err.message;
+  if (err instanceof Error) return err.message + causeOf(err);
   return "Unexpected error.";
 }
 
-client.once(Events.ClientReady, (c) => {
+client.once(Events.ClientReady, async (c) => {
   console.log(`Bastion bot online as ${c.user.tag}`);
   console.log(
     `[bastion-bot] API=${BASE} | HMAC=${process.env.BOT_HMAC_KEY ? "set" : "MISSING"} | OWNERS=${OWNER_IDS.length}`
   );
+  // Connectivity self-test so the real network failure shows up in the console.
+  try {
+    const r = await fetch(BASE + "/");
+    console.log(`[bastion-bot] connectivity OK: ${BASE} -> HTTP ${r.status}`);
+  } catch (e) {
+    console.error(
+      `[bastion-bot] connectivity FAILED to ${BASE}: ${(e as Error).message}${causeOf(e)}`
+    );
+  }
 });
 
 client.on(Events.InteractionCreate, async (interaction: Interaction) => {
